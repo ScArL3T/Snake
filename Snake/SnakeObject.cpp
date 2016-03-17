@@ -4,22 +4,21 @@
 SnakeObject::SnakeObject()
 {
 	//Stocam obiectul.
-	rm.LoadTexture(1, "data/snakehead.png");
-	rm.LoadTexture(2, "data/snakebody.png");
+	head.loadFromFile("data/snakehead.png");
+	tail.loadFromFile("data/snakebody.png");
 
 	sshape.setSize(sf::Vector2f(SNAKE_WIDTH, SNAKE_HEIGHT));
-	sshape.setTexture(&rm.TextureHold[1]);
+	sshape.setTexture(&head);
 	sshape.setPosition(sf::Vector2f(320, 320));
 	snake.push_back(sshape);
 	//snake.setTexture(sshape);
-	sshape.setTexture(&rm.TextureHold[2]);
+	sshape.setTexture(&tail);
 	sshape.setPosition(sf::Vector2f(320, 320 + SNAKE_HEIGHT));
 	snake.push_back(sshape);
 	//Directia initiala
 	dir = UP;
 
 	timp = 0.3;
-	move = false;
 	procent = 0.05;
 }
 
@@ -28,9 +27,9 @@ SnakeObject::~SnakeObject()
 {
 }
 
-void SnakeObject::Update(sf::RenderWindow &window)
+void SnakeObject::update(sf::RenderWindow &window)
 {
-	Input();
+	input();
 	//if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 	//	timp = 0.07;
 	//else timp = 0.1;
@@ -55,19 +54,17 @@ void SnakeObject::Update(sf::RenderWindow &window)
 		else timp = timp - 0.0009;
 		if (timp < 0.05)
 			timp = 0.05;*/
-		Move();
+		move();
 	}
-	CheckWindow(window);
-	SelfCollide();
 }
 
-void SnakeObject::Draw(sf::RenderWindow &window)
+void SnakeObject::draw(sf::RenderWindow &window)
 {
 	for (auto i = 0; i < snake.size(); i++)
 		window.draw(snake[i]);
 }
 
-void SnakeObject::Input()
+void SnakeObject::input()
 {
 	/*
 	sf::Event event;
@@ -96,7 +93,7 @@ void SnakeObject::Input()
 		dir = RIGHT;
 }
 
-void SnakeObject::SetPos()
+void SnakeObject::setPosition()
 {
 	for (auto i = snake.size() - 1; i > 0; i--)
 	{
@@ -104,9 +101,9 @@ void SnakeObject::SetPos()
 	}
 }
 
-void SnakeObject::Move()
+void SnakeObject::move()
 {
-	SetPos();
+	setPosition();
 	switch (dir)
 	{
 	case UP:
@@ -124,49 +121,40 @@ void SnakeObject::Move()
 	}
 }
 
-void SnakeObject::CheckWindow(sf::RenderWindow &window)
+bool SnakeObject::gameOver(sf::RenderWindow &window)
 {
 	//Daca primul block din sarpe iese de pe ecran => inchidem jocul
 
-	if (snake[0].getPosition().x < 0)
+	if (snake[0].getPosition().x < 0 || snake[0].getPosition().x + SNAKE_WIDTH > window.getSize().x
+		|| snake[0].getPosition().y < 0 || snake[0].getPosition().y + SNAKE_HEIGHT > window.getSize().y)
 	{
-		engine.SetState(new GameOver());
-		//snake[0].setPosition(sf::Vector2f(window.getSize().x - SNAKE_WIDTH, snake[0].getPosition().y));
+		return true;
 	}
-	else if (snake[0].getPosition().x + SNAKE_WIDTH > window.getSize().x)
-	{  
-		engine.SetState(new GameOver());
-		//snake[0].setPosition(sf::Vector2f(SNAKE_WIDTH, snake[0].getPosition().y));
-	}
-	else if (snake[0].getPosition().y < 0)
-	{
-		engine.SetState(new GameOver());
-	}
-	else if (snake[0].getPosition().y + SNAKE_HEIGHT > window.getSize().y)
-	{
-		engine.SetState(new GameOver());
-	}
+
+	for (auto i = 1; i < snake.size(); ++i)
+		if (selfCollide(snake[i]))
+			return true;
+
+	return false;
 }
 
-bool SnakeObject::Collide(sf::RectangleShape s, sf::RectangleShape a)
+bool SnakeObject::selfCollide(sf::RectangleShape &s)
 {
-	if (s.getGlobalBounds().intersects(a.getGlobalBounds()))
+	if (s.getGlobalBounds().intersects(snake.front().getGlobalBounds()))
 		return true;
 	else return false;
 }
 
-bool SnakeObject::Collide(sf::RectangleShape s, std::vector<sf::RectangleShape> a)
+bool SnakeObject::appleCollide(sf::RectangleShape &s)
 {
-	for (auto i = 0; i < a.size(); i++)
-	{
-		if (s.getGlobalBounds().intersects(a[i].getGlobalBounds()))
+	for (auto i = 0; i < snake.size(); i++)
+		if (s.getGlobalBounds().intersects(snake[i].getGlobalBounds()))
 			return true;
-	}
 	
 	return false;
 }
 
-void SnakeObject::Add()
+void SnakeObject::add()
 {
 	/*
 	Daca marul a fost mancat adaugam un block la sarpe
@@ -199,13 +187,4 @@ void SnakeObject::Add()
 	}
 
 	snake.push_back(sshape);
-}
-
-void SnakeObject::SelfCollide()
-{
-	for (auto i = 1; i < snake.size(); i++)
-	{
-		if (Collide(snake[0], snake[i]) == true)
-			engine.SetState(new GameOver());
-	}
 }

@@ -1,7 +1,8 @@
 #include "Game.h"
 #include "Menu.h"
 
-void Game::Initialize(sf::RenderWindow &window)
+Game::Game(StateManager &stack, sf::RenderWindow &window)
+	: State(stack, window)
 {
 	/*
 	Initializam jocul:
@@ -9,26 +10,27 @@ void Game::Initialize(sf::RenderWindow &window)
 	Animatii
 	Sprites
 	*/
-	rm.LoadFont(1, "data/font.ttf");
-	rm.LoadSound(1, "data/eat.ogg");
+	font.loadFromFile("data/font.ttf");
+	buffer.loadFromFile("data/eat.ogg");
+	sound.setBuffer(buffer);
 
-	score.score.setFont(rm.FontHold[1]);
+	score.score.setFont(font);
 
 	pausedText.setString("PAUSE");
 	pausedText.setCharacterSize(50);
-	pausedText.setFont(rm.FontHold[1]);
+	pausedText.setFont(font);
 	pausedText.setPosition(sf::Vector2f(window.getSize().x / 2 - pausedText.getLocalBounds().width / 2,
 		window.getSize().y / 2 - pausedText.getLocalBounds().height / 2));
 
 	enterText.setString("ENTER Menu");
 	enterText.setCharacterSize(15);
-	enterText.setFont(rm.FontHold[1]);
+	enterText.setFont(font);
 	enterText.setPosition(sf::Vector2f(window.getSize().x - enterText.getLocalBounds().width - 20,
 		window.getSize().y - enterText.getLocalBounds().height));
 
 	escText.setString("ESC Resume");
 	escText.setCharacterSize(15);
-	escText.setFont(rm.FontHold[1]);
+	escText.setFont(font);
 	escText.setPosition(sf::Vector2f(20, window.getSize().y - escText.getLocalBounds().height));
 
 	bg.setPosition({ 0, 0 });
@@ -40,25 +42,35 @@ void Game::Initialize(sf::RenderWindow &window)
 	spawned = false;
 }
 
-void Game::Draw(sf::RenderWindow &window)
+Game::~Game()
+{
+
+}
+
+void Game::handleEvent(const sf::Event &event)
+{
+
+}
+
+void Game::draw()
 {
 	/*
 	Desenam pe ecran.
 	*/
 	
-	AO.Draw(window);
-	SO.Draw(window);
-	score.Draw(window);
+	AO.draw(getWindow());
+	SO.draw(getWindow());
+	score.draw(getWindow());
 	if (paused)
 	{
-		window.draw(bg);
-		window.draw(pausedText);
-		window.draw(enterText);
-		window.draw(escText);
+		getWindow().draw(bg);
+		getWindow().draw(pausedText);
+		getWindow().draw(enterText);
+		getWindow().draw(escText);
 	}
 }
 
-void Game::Update(sf::RenderWindow &window)
+void Game::update(sf::Time dt)
 {
 	/*
 	Functia update.
@@ -75,27 +87,31 @@ void Game::Update(sf::RenderWindow &window)
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
 		{
-			rm.SoundBufferHold.release(1);
-			rm.SoundHold.clear();
-			rm.FontHold.release(1);
-			engine.SetState(new Menu());
+			popState();
+			pushState(States::ID::Menu);
 		}
 	}
 	else
 	{
-		SO.Update(window);
-		score.Update();
+		SO.update(getWindow());
+		score.update();
+
+		if (SO.gameOver(getWindow()))
+		{
+			popState();
+			pushState(States::ID::GameOver);
+		}
 
 		//Resetam marul
-		if (SO.Collide(AO.apple, SO.snake[0]))
+		if (SO.selfCollide(AO.apple))//, SO.snake[0]))
 		{
-			rm.SoundHold[0].play();
-			SO.Add();
+			sound.play();
+			SO.add();
 			score.Increment();
 
-			while (SO.Collide(AO.apple, SO.snake))
+			while (SO.appleCollide(AO.apple))
 			{
-				newpos = AO.Reset();
+				newpos = AO.reset();
 				AO.apple.setPosition(newpos);
 			}
 		}

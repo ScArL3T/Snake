@@ -1,5 +1,5 @@
 #ifndef APPLEOBJECT_H
-#define APPLEOJECT_H
+#define APPLEOBJECT_H
 
 #include "GameObject.h"
 #include "SnakeObject.h"
@@ -7,16 +7,16 @@
 #include <ctime>
 
 
-class AppleObject: public GameObject
+class AppleObject : public GameObject
 {
 public:
 	AppleObject();
 	~AppleObject();
 
-	void Update(sf::RenderWindow &window);
-	void Draw(sf::RenderWindow &window);
-	sf::Vector2f Reset();
-	void SetPos(sf::Vector2f newpos);
+	void update(sf::RenderWindow &window);
+	void draw(sf::RenderWindow &window);
+	sf::Vector2f reset();
+	void setPosition(sf::Vector2f newpos);
 
 	sf::RectangleShape apple;
 private:
@@ -24,8 +24,8 @@ private:
 	std::minstd_rand0 generator;
 
 	//std::uniform_int_distribution<int> distribution; moved in cpp
-	ResourceManager rm;
 	int posx, posy;
+	sf::Texture texture;
 };
 
 #endif

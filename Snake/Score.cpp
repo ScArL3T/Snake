@@ -17,7 +17,7 @@ Score::~Score()
 {
 }
 
-void Score::Update()
+void Score::update()
 {
 	score.setString("Score: " + std::to_string(count));
 }
@@ -27,7 +27,7 @@ void Score::Increment()
 	count++;
 }
 
-void Score::Draw(sf::RenderWindow &window)
+void Score::draw(sf::RenderWindow &window)
 {
 	window.draw(score);
 }

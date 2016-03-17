@@ -1,8 +1,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "States.h"
-#include <Thor/Input.hpp>
+#include "State.h"
 
 class Button
 {
@@ -11,8 +10,6 @@ public:
 	//Button(sf::RenderWindow &window, sf::Image image1, sf::Image image2);
 	Button();
 	~Button();
-
-	thor::ActionMap<std::string> map;
 
 	bool TextPressed(sf::Text text);
 	bool SpritePressed(sf::RenderWindow &window, sf::Sprite sprite);

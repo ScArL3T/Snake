@@ -10,9 +10,9 @@ public:
 	Score();
 	~Score();
 
-	void Update();
+	void update();
 	void Increment();
-	void Draw(sf::RenderWindow &window);
+	void draw(sf::RenderWindow &window);
 	sf::Text score;
 
 	int count;
