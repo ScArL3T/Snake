@@ -52,24 +52,6 @@ void Game::handleEvent(const sf::Event &event)
 
 }
 
-void Game::draw()
-{
-	/*
-	Desenam pe ecran.
-	*/
-	
-	AO.draw(getWindow());
-	SO.draw(getWindow());
-	score.draw(getWindow());
-	if (paused)
-	{
-		getWindow().draw(bg);
-		getWindow().draw(pausedText);
-		getWindow().draw(enterText);
-		getWindow().draw(escText);
-	}
-}
-
 void Game::update(sf::Time dt)
 {
 	/*
@@ -100,19 +82,20 @@ void Game::update(sf::Time dt)
 		{
 			popState();
 			pushState(States::ID::GameOver);
+			return;
 		}
 
 		//Resetam marul
-		if (SO.selfCollide(AO.apple))//, SO.snake[0]))
+		if (SO.selfCollide(AO.getApple()))//, SO.snake[0]))
 		{
 			sound.play();
 			SO.add();
 			score.Increment();
 
-			while (SO.appleCollide(AO.apple))
+			while (SO.appleCollide(AO.getApple()))
 			{
 				newpos = AO.reset();
-				AO.apple.setPosition(newpos);
+				AO.setPosition(newpos);
 			}
 		}
 
@@ -123,4 +106,22 @@ void Game::update(sf::Time dt)
 	}
 
 	enterKey = sf::Keyboard::isKeyPressed(sf::Keyboard::Escape);
+}
+
+void Game::draw()
+{
+	/*
+	Desenam pe ecran.
+	*/
+
+	AO.draw(getWindow());
+	SO.draw(getWindow());
+	score.draw(getWindow());
+	if (paused)
+	{
+		getWindow().draw(bg);
+		getWindow().draw(pausedText);
+		getWindow().draw(enterText);
+		getWindow().draw(escText);
+	}
 }

@@ -3,6 +3,7 @@
 
 #include "State.h"
 #include "AppleObject.h"
+#include "SnakeObject.h"
 #include "Score.h"
 #include <SFML/Audio.hpp>
 

@@ -1,27 +1,16 @@
+#include <SFML/Audio.hpp>
+
 #include "StateManager.h"
 #include "StatesID.h"
-#include <SFML/Audio.hpp>
+#include "SplashScreen.h"
 
 int main()
 {
-	sf::Music intro;
-	intro.openFromFile("data/intromusic.ogg");
-	//intro.play();
-
 	//Splash
 	/*unsigned char opacity = 255;
 	float duration = 4.5;
 	SplashScreen ss;
 	ss.Create(opacity, duration);*/
-
-	//Jocul
-	sf::Texture texture;
-	texture.loadFromFile("data/bg.jpg");
-	sf::Sprite sprite;
-	sprite.setTexture(texture);
-	sf::RectangleShape mask;
-	mask.setSize({ 640, 480 });
-	mask.setFillColor(sf::Color(0, 0, 0, 200));
 
 	sf::RenderWindow window(sf::VideoMode(640, 480), "Snake");
 	std::cout << "Window created." << std::endl;

@@ -5,15 +5,8 @@ std::uniform_int_distribution<int> distributiony(2, 23);
 
 AppleObject::AppleObject()
 {
-	texture.loadFromFile("data/apple.png");
-	apple.setTexture(&texture);
-	apple.setSize(sf::Vector2f(SNAKE_WIDTH, SNAKE_HEIGHT));
-
-	generator.seed(time(0));
-	posx = distributionx(generator);
-	posy = distributiony(generator);
-
-	apple.setPosition(sf::Vector2f(posx*SNAKE_WIDTH, posy*SNAKE_HEIGHT));
+	apple.setSize({20, 20});
+	apple.setPosition(reset());
 }
 
 AppleObject::~AppleObject()
@@ -29,17 +22,21 @@ void AppleObject::draw(sf::RenderWindow &window)
 	window.draw(apple);
 }
 
+void AppleObject::setPosition(sf::Vector2f newpos)
+{
+	apple.setPosition(newpos);
+}
+
+sf::RectangleShape &AppleObject::getApple()
+{
+	return apple;
+}
+
 sf::Vector2f AppleObject::reset()
 {
 	generator.seed(time(0));
 	int posx = distributionx(generator);
 	int posy = distributiony(generator);
 
-	return sf::Vector2f(posx*SNAKE_WIDTH, posy*SNAKE_HEIGHT);
+	return sf::Vector2f(posx * 20, posy * 20);
 }
-
-void AppleObject::setPosition(sf::Vector2f newpos)
-{
-	apple.setPosition(newpos);
-}
-

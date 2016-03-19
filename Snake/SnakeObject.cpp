@@ -3,25 +3,22 @@
 
 SnakeObject::SnakeObject()
 {
-	//Stocam obiectul.
-	head.loadFromFile("data/snakehead.png");
-	tail.loadFromFile("data/snakebody.png");
+	shape.setSize(sf::Vector2f(SNAKE_WIDTH, SNAKE_HEIGHT));
 
-	sshape.setSize(sf::Vector2f(SNAKE_WIDTH, SNAKE_HEIGHT));
-	sshape.setTexture(&head);
-	sshape.setPosition(sf::Vector2f(320, 320));
-	snake.push_back(sshape);
-	//snake.setTexture(sshape);
-	sshape.setTexture(&tail);
-	sshape.setPosition(sf::Vector2f(320, 320 + SNAKE_HEIGHT));
-	snake.push_back(sshape);
+	shape.setFillColor(sf::Color::Green);
+	shape.setPosition(sf::Vector2f(320, 320));
+	snake.push_back(shape);
+
+	shape.setFillColor(sf::Color(0, 200, 0));
+	shape.setPosition(sf::Vector2f(320, 320 + SNAKE_HEIGHT));
+	snake.push_back(shape);
+
 	//Directia initiala
-	dir = UP;
+	dir = Directie::UP;
 
 	timp = 0.3;
 	procent = 0.05;
 }
-
 
 SnakeObject::~SnakeObject()
 {
@@ -36,7 +33,6 @@ void SnakeObject::update(sf::RenderWindow &window)
 	
 	if (clock.getElapsedTime().asSeconds() >= timp)
 	{
-
 		clock.restart();
 
 		if (time.getElapsedTime().asSeconds() > 6.f)
@@ -47,13 +43,6 @@ void SnakeObject::update(sf::RenderWindow &window)
 			if (timp < 0.04)
 				timp = 0.04;
 		}
-		/*if (timp > 0.2)
-			timp = timp - 0.003;
-		else if (timp > 0.1)
-			timp = timp - 0.001;
-		else timp = timp - 0.0009;
-		if (timp < 0.05)
-			timp = 0.05;*/
 		move();
 	}
 }
@@ -66,31 +55,14 @@ void SnakeObject::draw(sf::RenderWindow &window)
 
 void SnakeObject::input()
 {
-	/*
-	sf::Event event;
-	while (window.pollEvent(event))
-	{
-		if (event.type == sf::Event::KeyPressed)
-		{
-			if (event.key.code == sf::Keyboard::W && dir != DOWN)
-				dir = UP;
-			else if (event.key.code == sf::Keyboard::S && dir != UP)
-				dir = DOWN;
-			else if (event.key.code == sf::Keyboard::A && dir != RIGHT)
-				dir = LEFT;
-			else if (event.key.code == sf::Keyboard::D && dir != LEFT)
-				dir = RIGHT;
-		}
-	}*/
-	
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && dir != DOWN)
-		dir = UP;
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && dir != UP)
-		dir = DOWN;
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && dir != RIGHT)
-		dir = LEFT;
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && dir != LEFT)
-		dir = RIGHT;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && dir != Directie::DOWN)
+		dir = Directie::UP;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && dir != Directie::UP)
+		dir = Directie::DOWN;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && dir != Directie::RIGHT)
+		dir = Directie::LEFT;
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && dir != Directie::LEFT)
+		dir = Directie::RIGHT;
 }
 
 void SnakeObject::setPosition()
@@ -106,16 +78,16 @@ void SnakeObject::move()
 	setPosition();
 	switch (dir)
 	{
-	case UP:
+	case Directie::UP:
 		snake[0].move(0, -SNAKE_HEIGHT);
 		break;
-	case DOWN:
+	case Directie::DOWN:
 		snake[0].move(0, SNAKE_HEIGHT);
 		break;
-	case LEFT:
+	case Directie::LEFT:
 		snake[0].move(-SNAKE_WIDTH, 0);
 		break;
-	case RIGHT:
+	case Directie::RIGHT:
 		snake[0].move(SNAKE_WIDTH, 0);
 		break;
 	}
@@ -127,9 +99,8 @@ bool SnakeObject::gameOver(sf::RenderWindow &window)
 
 	if (snake[0].getPosition().x < 0 || snake[0].getPosition().x + SNAKE_WIDTH > window.getSize().x
 		|| snake[0].getPosition().y < 0 || snake[0].getPosition().y + SNAKE_HEIGHT > window.getSize().y)
-	{
 		return true;
-	}
+
 
 	for (auto i = 1; i < snake.size(); ++i)
 		if (selfCollide(snake[i]))
@@ -142,7 +113,8 @@ bool SnakeObject::selfCollide(sf::RectangleShape &s)
 {
 	if (s.getGlobalBounds().intersects(snake.front().getGlobalBounds()))
 		return true;
-	else return false;
+
+	return false;
 }
 
 bool SnakeObject::appleCollide(sf::RectangleShape &s)
@@ -164,27 +136,27 @@ void SnakeObject::add()
 	if (snake[snake.size() - 1].getPosition().x < snake[snake.size() - 2].getPosition().x
 		&& snake[snake.size() - 1].getPosition().y == snake[snake.size() - 2].getPosition().y)
 	{
-		sshape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x - SNAKE_WIDTH,
+		shape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x - SNAKE_WIDTH,
 			snake[snake.size() - 1].getPosition().y));
 	}
 	else if (snake[snake.size() - 1].getPosition().x > snake[snake.size() - 2].getPosition().x
 		&& snake[snake.size() - 1].getPosition().y == snake[snake.size() - 2].getPosition().y)
 	{
-		sshape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x + SNAKE_WIDTH,
+		shape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x + SNAKE_WIDTH,
 			snake[snake.size() - 1].getPosition().y));
 	}
 	else if (snake[snake.size() - 1].getPosition().y < snake[snake.size() - 2].getPosition().y
 		&& snake[snake.size() - 1].getPosition().x == snake[snake.size() - 2].getPosition().x)
 	{
-		sshape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x,
+		shape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x,
 			snake[snake.size() - 1].getPosition().y - SNAKE_HEIGHT));
 	}
 	else if (snake[snake.size() - 1].getPosition().y > snake[snake.size() - 2].getPosition().y
 		&& snake[snake.size() - 1].getPosition().x == snake[snake.size() - 2].getPosition().x)
 	{
-		sshape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x,
+		shape.setPosition(sf::Vector2f(snake[snake.size() - 1].getPosition().x,
 			snake[snake.size() - 1].getPosition().y + SNAKE_HEIGHT));
 	}
 
-	snake.push_back(sshape);
+	snake.push_back(shape);
 }

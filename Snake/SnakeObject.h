@@ -22,7 +22,6 @@ public:
 	bool selfCollide(sf::RectangleShape &s);
 	bool appleCollide(sf::RectangleShape &s);
 	void add();
-
 	
 private:
 	void input();
@@ -31,16 +30,13 @@ private:
 
 	std::vector<sf::RectangleShape> snake;
 	
-	sf::RectangleShape sshape;
+	sf::RectangleShape shape;
 	sf::Clock clock, time;
 	float procent;
 	float timp;
-	//bool move;
 
-	sf::Texture head, tail;
-
-	enum directie {UP, DOWN, LEFT, RIGHT};
-	int dir;
+	enum class Directie {UP, DOWN, LEFT, RIGHT};
+	Directie dir;
 };
 
 #endif
