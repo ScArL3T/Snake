@@ -1,53 +1,80 @@
-#include <SFML/Audio.hpp>
-
-#include "StateManager.h"
-#include "StatesID.h"
+#include "StateManager.hpp"
 #include "SplashScreen.h"
+
+#include "MenuState.hpp"
+#include "GameState.hpp"
+#include "GameOverState.hpp"
+#include "PauseState.hpp"
 
 int main()
 {
-	//Splash
-	/*unsigned char opacity = 255;
-	float duration = 4.5;
+	// Splash
+#ifdef _WIN32
+	unsigned char opacity = 255;
+	float duration = 1.5f;
 	SplashScreen ss;
-	ss.Create(opacity, duration);*/
+	ss.create(opacity, duration);
+#endif
 
-	sf::RenderWindow window(sf::VideoMode(640, 480), "Snake");
-	std::cout << "Window created." << std::endl;
-	
-	sf::Image icon;
-	icon.loadFromFile("data/icon.png");
-	window.setIcon(512, 512, icon.getPixelsPtr());
+	sf::RenderWindow window;
+	window.create({ 640, 480 }, "Snake", sf::Style::Titlebar | sf::Style::Close);
+	window.setFramerateLimit(60);
 
-	StateManager state(window);
-	state.pushState(States::ID::Menu);
+	FontManager fontManager;
+	fontManager.load(Fonts::ID::GUI, "data/font.ttf");
 
+	SoundPlayer soundPlayer;
+	soundPlayer.load();
 
-	const sf::Time m_frameTime = sf::seconds(1.f / 30.f);
+	TextureManager textureManager;
+	textureManager.load(Textures::ID::ButtonGreen, "data/button_green.png");
+	textureManager.load(Textures::ID::ButtonRed, "data/button_red.png");
+	textureManager.load(Textures::ID::Panel, "data/panel.png");
+
+	Score score(fontManager.get(Fonts::ID::GUI));
+
+	States::Context context(window, soundPlayer, fontManager, textureManager, score);
+	StateManager manager(context);
+
+	// Registering available states
+	manager.registerState<MenuState>(States::ID::Menu);
+	manager.registerState<GameState>(States::ID::Game);
+	manager.registerState<GameOverState>(States::ID::GameOver);
+	manager.registerState<PauseState>(States::ID::Pause);
+	manager.pushState(States::ID::Menu);
+
+	const sf::Time frameTime = sf::seconds(1.f / 30.f);
 	sf::Clock clock;
 	sf::Time passedTime = sf::Time::Zero;
 
+	// Main loop
 	while (window.isOpen())
 	{
 		sf::Time elapsedTime = clock.restart();
 		passedTime += elapsedTime;
-
-		while (passedTime > m_frameTime)
+		
+		// Event loop
+		sf::Event event;
+		while (window.pollEvent(event))
 		{
-			passedTime -= m_frameTime;
-
-			sf::Event event;
-			while (window.pollEvent(event))
-			{
-				if (event.type == sf::Event::Closed)
-					window.close();
-				state.handleEvent(event);
-			}
-			state.update(m_frameTime);
+			if (event.type == sf::Event::Closed)
+				window.close();
+			manager.processEvents(event);
 		}
 
-		window.clear();
-		state.draw();
+		// Physics, logics etc
+		while (passedTime > frameTime)
+		{
+			passedTime -= frameTime;
+			manager.update(frameTime);
+
+			if (manager.isEmpty())
+				window.close();
+		}
+
+		// Rendering
+		window.clear(sf::Color(210, 210, 210));
+		manager.draw();
 		window.display();
 	}
 

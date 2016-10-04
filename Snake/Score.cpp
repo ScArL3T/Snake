@@ -1,33 +1,39 @@
-#include "Score.h"
+#include "Score.hpp"
 
-
-Score::Score()
+Score::Score(const sf::Font &font)
+	: score()
+	, count(0)
 {
-	offsetX = 10;
-	offsetY = 20;
-	count = 0;
-
+	score.setFont(font);
 	score.setString("Score: " + std::to_string(count));
 	score.setCharacterSize(20);
-	score.setPosition(sf::Vector2f(offsetX, offsetY));
+	score.setColor(sf::Color(0, 0, 0));
 }
 
-
-Score::~Score()
+void Score::addScore()
 {
-}
-
-void Score::update()
-{
+	count++;
 	score.setString("Score: " + std::to_string(count));
 }
 
-void Score::Increment()
+void Score::resetScore()
 {
-	count++;
+	count = 0;
+	score.setString("Score: " + std::to_string(count));
 }
 
-void Score::draw(sf::RenderWindow &window)
+unsigned int Score::getValue() const
 {
-	window.draw(score);
+	return count;
+}
+
+sf::Vector2f Score::getSize() const
+{
+	return sf::Vector2f(score.getLocalBounds().width, score.getLocalBounds().height);
+}
+
+void Score::draw(sf::RenderTarget &target, sf::RenderStates states) const
+{
+	states.transform *= getTransform();
+	target.draw(score, states);
 }

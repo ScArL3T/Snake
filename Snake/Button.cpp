@@ -1,65 +1,131 @@
-#include "Button.h"
+#include "Button.hpp"
+#include "SoundPlayer.hpp"
 
-//thor::Action mouseClick(sf::Mouse::Button::Left, thor::Action::ReleaseOnce);
-
-Button::Button()
-{
-	//map["click"] = mouseClick;
-}
-
-Button::~Button()
+Button::Button(SoundPlayer &soundPlayer)
+	: callback()
+	, toggle(false)
+	, soundPlayer(soundPlayer)
 {
 }
 
-//Verificam daca mouse-ul se afla peste text.
-bool Button::Hover(sf::RenderWindow &window, sf::Text text)
+void Button::setCallback(Callback callback)
 {
-	mouse_pos = sf::Mouse::getPosition(window);
-	startposX = text.getPosition().x;
-	startposY = text.getPosition().y - 20; //Daca inaltimea nu e buna => -20
-	width = text.getLocalBounds().width;
-	height = text.getLocalBounds().height;
+	this->callback = std::move(callback);
+}
 
-	if (mouse_pos.x >= startposX && mouse_pos.x <= startposX + width 
-		&& mouse_pos.y >= startposY && mouse_pos.y <= startposY + height)
+void Button::setTexture(const sf::Texture &texture)
+{
+	sprite.setTexture(texture);
+	changeTexture(Type::Normal);
+	centerText();
+}
+
+void Button::setText(const std::string &text)
+{
+	this->text.setString(text);
+	centerText();
+}
+
+void Button::setFont(const sf::Font &font)
+{
+	text.setFont(font);
+	centerText();
+}
+
+void Button::handleEvent(const sf::Event &event)
+{
+	sf::FloatRect rect;
+	rect.left = getPosition().x;
+	rect.top = getPosition().y;
+	rect.width = sprite.getLocalBounds().width;
+	rect.height = sprite.getLocalBounds().height;
+
+	switch (event.type)
 	{
-		return true;
+	case sf::Event::MouseButtonPressed:
+	case sf::Event::MouseButtonReleased:
+		if (rect.contains(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)))
+		{
+			if (event.type == sf::Event::MouseButtonPressed)
+			{
+				activate();
+			}
+			else
+			{
+				deactivate();
+			}
+		}
+		break;
+	case sf::Event::MouseMoved:
+		if (rect.contains(static_cast<float>(event.mouseMove.x), static_cast<float>(event.mouseMove.y)))
+		{
+			if (!isSelected())
+				select();
+		}
+		else
+		{
+			if (isSelected())
+				deselect();
+		}
+		break;
 	}
-	return false;
 }
 
-//Verificam daca textul a fost apasat.
-bool Button::TextPressed(sf::Text text)
+const bool Button::isSelectable() const
 {
-	if (text.getColor() == sf::Color::Red && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-	{
-		return true;
-	}
-	return false;
+	return true;
 }
 
-//Verificam daca mouse-ul se afla peste sprite
-bool Button::Hover(sf::RenderWindow &window, sf::Sprite sprite)
+void Button::select()
 {
-	mouse_pos = sf::Mouse::getPosition(window);
-	startposX = sprite.getPosition().x;
-	startposY = sprite.getPosition().y - 20; //Daca inaltimea nu e buna => -20
-	width = sprite.getLocalBounds().width;
-	height = sprite.getLocalBounds().height;
+	Widget::select();
+	changeTexture(Type::Selected);
 
-	if (mouse_pos.x >= startposX && mouse_pos.x <= startposX + width
-		&& mouse_pos.y >= startposY && mouse_pos.y <= startposY + height)
-	{
-		return true;
-	}
-	return false;
+	soundPlayer.play(SoundEffects::ID::ButtonHover);
 }
-//Verificam daca sprite-ul a fost apasat.
-bool Button::SpritePressed(sf::RenderWindow &window, sf::Sprite sprite)
+
+void Button::deselect()
 {
-	if (Hover(window, sprite) && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-	{
-		return true;
-	}
-	return false;
+	Widget::deselect();
+	changeTexture(Type::Normal);
 }
+
+void Button::activate()
+{
+	Widget::activate();
+	changeTexture(Type::Pressed);
+
+	if (callback)
+		callback();
+	
+	deactivate();
+	soundPlayer.play(SoundEffects::ID::ButtonClick);
+}
+
+void Button::deactivate()
+{
+	Widget::deactivate();
+	changeTexture(Type::Selected);
+}
+
+void Button::draw(sf::RenderTarget &target, sf::RenderStates states) const
+{
+	states.transform *= getTransform();
+	target.draw(sprite, states);
+	target.draw(text, states);
+}
+
+void Button::changeTexture(Type type)
+{
+	sf::IntRect textureRect(190 * type, 0, 190, 49);
+	sprite.setTextureRect(textureRect);
+}
+
+void Button::centerText()
+{
+	sf::FloatRect rect = text.getGlobalBounds();
+	text.setOrigin(rect.left, rect.top);
+	text.setPosition({ sprite.getLocalBounds().width / 2 - rect.width / 2,
+		sprite.getLocalBounds().height / 2 - rect.height / 2 });
+}
+

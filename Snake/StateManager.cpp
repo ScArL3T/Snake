@@ -1,14 +1,9 @@
-#include "StateManager.h"
-#include "Game.h"
-#include "GameOver.h"
-#include "Menu.h"
+#include "StateManager.hpp"
 
-StateManager::StateManager(sf::RenderWindow &window)
-	: window(window)
-{
-}
+#include <assert.h>
 
-StateManager::~StateManager()
+StateManager::StateManager(States::Context context)
+	: context(context)
 {
 }
 
@@ -27,20 +22,20 @@ void StateManager::clearStates()
 	queue.push_back(std::make_pair(Action::Clear, States::ID::None));
 }
 
-void StateManager::handleEvent(const sf::Event &event)
+void StateManager::processEvents(const sf::Event &event)
 {
-	for (State::Ptr &state : stateStack)
-		if (state->isActive())
-			state->handleEvent(event);
+	for (auto it = stateStack.rbegin(); it != stateStack.rend(); ++it)
+		if (!(*it)->handleEvent(event))
+			break;
 
 	applyChanges();
 }
 
 void StateManager::update(sf::Time dt)
 {
-	for (State::Ptr &state : stateStack)
-		if (state->isActive())
-			state->update(dt);
+	for (auto it = stateStack.rbegin(); it != stateStack.rend(); ++it)
+		if (!(*it)->update(dt))
+			break;
 
 	applyChanges();
 }
@@ -51,22 +46,17 @@ void StateManager::draw()
 		state->draw();
 }
 
+bool StateManager::isEmpty() const
+{
+	return stateStack.empty();
+}
+
 State::Ptr StateManager::createState(States::ID state)
 {
-	switch (state)
-	{
-	case States::ID::Menu:
-		return std::make_unique<Menu>(*this, window);
-		break;
-	case States::ID::Game:
-		return std::make_unique<Game>(*this, window);
-		break;
-	case States::ID::GameOver:
-		return std::make_unique<GameOver>(*this, window);
-		break;
-	default:
-		break;
-	}
+	auto found = factories.find(state);
+	assert(found != factories.end());
+
+	return found->second();
 }
 
 void StateManager::applyChanges()

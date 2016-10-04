@@ -4,13 +4,13 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <Windows.h>
+
 class SplashScreen
 {
 public:
 	SplashScreen();
-	~SplashScreen();
 
-	void Create(unsigned char opacity, float time);
+	void create(unsigned char opacity, float time);
 private:
 	bool setTransparent(HWND hWnd, const sf::Image& image, unsigned char alpha);
 

@@ -1,16 +1,10 @@
-#include "State.h"
-#include "StateManager.h"
+#include "State.hpp"
+#include "StateManager.hpp"
 
-State::State(StateManager &stack, sf::RenderWindow &window)
+State::State(StateManager &stack, States::Context context)
 	: stack(stack)
-	, window(window)
-	, active(true)
+	, context(context)
 {
-}
-
-bool State::isActive()
-{
-	return active;
 }
 
 void State::pushState(States::ID state)
@@ -28,12 +22,7 @@ void State::clearStates()
 	stack.clearStates();
 }
 
-void State::setActive(bool value)
+States::Context State::getContext() const
 {
-	active = value;
-}
-
-sf::RenderWindow &State::getWindow()
-{
-	return window;
+	return context;
 }

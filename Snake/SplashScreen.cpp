@@ -9,16 +9,11 @@ SplashScreen::SplashScreen()
 		(sf::VideoMode::getDesktopMode().height - img.getSize().y) / 2));
 }
 
-
-SplashScreen::~SplashScreen()
+void SplashScreen::create(unsigned char opacity, float time)
 {
-}
-
-void SplashScreen::Create(unsigned char opacity, float time)
-{
-	if (!setTransparent(window.getSystemHandle(), img, opacity));
+	if (!setTransparent(window.getSystemHandle(), img, opacity))
 	{
-		//error
+		return;
 	}
 	texture.loadFromImage(img);
 	sprite.setTexture(texture);
